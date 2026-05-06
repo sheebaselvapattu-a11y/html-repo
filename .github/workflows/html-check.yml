@@ -4,14 +4,87 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
+  html-validation:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout repository code
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Display Success Message
-      run: echo "HTML Project Checked Successfully!"
+    # Step 2: Success start message
+    - name: Start Validation
+      run: echo "Starting HTML and CSS validation..."
+
+    # Step 3: Check if index.html exists
+    - name: Check index.html File
+      run: |
+        if [ ! -f index.html ]; then
+          echo "ERROR: index.html file is missing!"
+          exit 1
+        else
+          echo "index.html file found successfully."
+        fi
+
+    # Step 4: Check if style.css exists
+    - name: Check style.css File
+      run: |
+        if [ ! -f style.css ]; then
+          echo "WARNING: style.css file is missing!"
+        else
+          echo "style.css file found successfully."
+        fi
+
+    # Step 5: Check for mandatory HTML tags
+    - name: Validate Basic HTML Tags
+      run: |
+        if ! grep -q "<html" index.html; then
+          echo "ERROR: Missing <html> tag!"
+          exit 1
+        fi
+
+        if ! grep -q "<head>" index.html; then
+          echo "ERROR: Missing <head> tag!"
+          exit 1
+        fi
+
+        if ! grep -q "<body>" index.html; then
+          echo "ERROR: Missing <body> tag!"
+          exit 1
+        fi
+
+        if ! grep -q "</html>" index.html; then
+          echo "ERROR: Missing closing </html> tag!"
+          exit 1
+        fi
+
+        echo "Basic HTML structure is correct."
+
+    # Step 6: Check for title tag
+    - name: Validate Title Tag
+      run: |
+        if ! grep -q "<title>" index.html; then
+          echo "ERROR: Missing <title> tag!"
+          exit 1
+        else
+          echo "Title tag found."
+        fi
+
+    # Step 7: Check for H1 heading
+    - name: Validate H1 Tag
+      run: |
+        if ! grep -q "<h1>" index.html; then
+          echo "ERROR: Missing <h1> heading!"
+          exit 1
+        else
+          echo "H1 heading found."
+        fi
+
+    # Step 8: Final Success Message
+    - name: Validation Passed
+      run: echo "HTML Project Checked Successfully! No major errors found."
