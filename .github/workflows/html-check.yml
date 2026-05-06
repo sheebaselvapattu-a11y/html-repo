@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout repository code
+    # Step 1: Checkout repository
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    # Step 2: Success start message
+    # Step 2: Start Message
     - name: Start Validation
-      run: echo "Starting HTML and CSS validation..."
+      run: echo "Checking HTML structure and closing tags..."
 
     # Step 3: Check if index.html exists
     - name: Check index.html File
@@ -27,64 +27,43 @@ jobs:
         if [ ! -f index.html ]; then
           echo "ERROR: index.html file is missing!"
           exit 1
-        else
-          echo "index.html file found successfully."
         fi
 
-    # Step 4: Check if style.css exists
-    - name: Check style.css File
+    # Step 4: Check opening and closing tags
+    - name: Validate Opening and Closing Tags
       run: |
-        if [ ! -f style.css ]; then
-          echo "WARNING: style.css file is missing!"
-        else
-          echo "style.css file found successfully."
-        fi
+        check_tag() {
+          OPEN_COUNT=$(grep -o "<$1[^>]*>" index.html | wc -l)
+          CLOSE_COUNT=$(grep -o "</$1>" index.html | wc -l)
 
-    # Step 5: Check for mandatory HTML tags
-    - name: Validate Basic HTML Tags
+          if [ "$OPEN_COUNT" -ne "$CLOSE_COUNT" ]; then
+            echo "ERROR: <$1> tag mismatch! Opening tags: $OPEN_COUNT, Closing tags: $CLOSE_COUNT"
+            exit 1
+          else
+            echo "SUCCESS: <$1> tag is properly closed."
+          fi
+        }
+
+        check_tag html
+        check_tag head
+        check_tag body
+        check_tag title
+        check_tag h1
+        check_tag p
+        check_tag div
+        check_tag section
+        check_tag footer
+
+    # Step 5: Check if DOCTYPE exists
+    - name: Validate DOCTYPE
       run: |
-        if ! grep -q "<html" index.html; then
-          echo "ERROR: Missing <html> tag!"
-          exit 1
-        fi
-
-        if ! grep -q "<head>" index.html; then
-          echo "ERROR: Missing <head> tag!"
-          exit 1
-        fi
-
-        if ! grep -q "<body>" index.html; then
-          echo "ERROR: Missing <body> tag!"
-          exit 1
-        fi
-
-        if ! grep -q "</html>" index.html; then
-          echo "ERROR: Missing closing </html> tag!"
-          exit 1
-        fi
-
-        echo "Basic HTML structure is correct."
-
-    # Step 6: Check for title tag
-    - name: Validate Title Tag
-      run: |
-        if ! grep -q "<title>" index.html; then
-          echo "ERROR: Missing <title> tag!"
+        if ! grep -q "<!DOCTYPE html>" index.html; then
+          echo "ERROR: Missing <!DOCTYPE html> declaration!"
           exit 1
         else
-          echo "Title tag found."
+          echo "SUCCESS: DOCTYPE found."
         fi
 
-    # Step 7: Check for H1 heading
-    - name: Validate H1 Tag
-      run: |
-        if ! grep -q "<h1>" index.html; then
-          echo "ERROR: Missing <h1> heading!"
-          exit 1
-        else
-          echo "H1 heading found."
-        fi
-
-    # Step 8: Final Success Message
+    # Step 6: Final Success
     - name: Validation Passed
-      run: echo "HTML Project Checked Successfully! No major errors found."
+      run: echo "HTML validation successful! All checked tags are properly closed."
